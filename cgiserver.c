@@ -316,6 +316,7 @@ void *handleRequest(void *socket) {
 		 */
 		char * filename          = NULL; /* Filename as received (ie, /index.php) */
 		char * querystring       = NULL; /* Query string, URL encoded */
+		char * request_uri       = NULL; /* The URI which was given in order to access the page (ie, /index.php) */ 
 		int request_type         = 0;    /* Request type, 0=GET, 1=POST, 2=HEAD ... */
 		char * _filename         = NULL; /* Filename relative to server (ie, pages/index.php) */
 		char * ext               = NULL; /* Extension for requested file */
@@ -431,6 +432,8 @@ void *handleRequest(void *socket) {
 				/*
 				 * Get the query string.
 				 */
+				request_uri = calloc(sizeof(char) * (strlen(filename) + 2), 1);
+				strcpy(request_uri, filename);
 				querystring = strstr(filename, "?");
 				if (querystring) {
 					querystring++;
@@ -790,6 +793,7 @@ _use_file:
 						 * REMOTE_ADDR       : IP of remote user
 						 * REMOTE_HOST       : Hostname of remote user (reverse DNS)
 						 * REQUEST_METHOD    : GET, POST, HEAD, etc.
+						 * REQUEST_URI       : The interpreted relative pathname of the requested document or CGI
 						 * SCRIPT_FILENAME   : Same as PATH_TRANSLATED (PHP, primarily)
 						 * SCRIPT_NAME       : Request file path
 						 * SERVER_NAME       : Our hostname or Host: header
@@ -828,6 +832,7 @@ _use_file:
 								setenv("QUERY_STRING", "", 1);
 							}
 						}
+						setenv("REQUEST_URI", request_uri, 1);
 						char fullpath[1024 + strlen(_filename)];
 						getcwd(fullpath, 1023);
 						strcat(fullpath, "/");
